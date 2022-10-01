@@ -10,7 +10,7 @@ workflows:
           aws-access-key-id: AWS_ACCESS_KEY
           aws-cli-version: latest
           aws-secret-access-key: AWS_ACCESS_SECRET
-          repo: AWS_ECR_REPO_NAME
+          repo: '${AWS_ECR_REPO_NAME}'
           docker-login: false
           registry-id: AWS_ECR_REGISTRY_ID
           region: '${AWS_REGION_NAME}'
