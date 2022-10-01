@@ -3,13 +3,12 @@ version: 2.1
 orbs:
   aws-ecr: circleci/aws-ecr@8.1.2
 
-jobs:
-  - aws-ecr/build-and-push-image:
-    repo: "${AWS_RESOURCE_NAME_PREFIX}"
-    tag: "${CIRCLE_SHA1}"
-
 workflows:
-  version: 2
-  primary:
+  build_and_push_image:
     jobs:
-      - buildAndPushImage
+      - aws-ecr/build-and-push-image:
+          aws-access-key-id: AWS_ACCESS_KEY
+          aws-cli-version: latest
+          aws-secret-access-key: AWS_ACCESS_SECRET
+          repo: AWS_ECR_REPO_NAME
+          tag: 'latest'
