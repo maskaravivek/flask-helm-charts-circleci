@@ -1,0 +1,20 @@
+# Default values for charts.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: 927728891088.dkr.ecr.us-west-2.amazonaws.com/flask-hello-world:latest
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+labels:
+  env: "staging"
+  cluster: "flask-helm-charts-circleci"
+
+
+service:
+  port: 80
+  targetPort: 5000
+  type: LoadBalancer
