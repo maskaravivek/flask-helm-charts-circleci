@@ -12,5 +12,5 @@ workflows:
           aws-secret-access-key: AWS_ACCESS_SECRET
           repo: AWS_ECR_REPO_NAME
           registry-id: AWS_ECR_REGISTRY_ID
-          region: AWS_REGION
+          region: AWS_REGION_NAME
           tag: 'latest'
