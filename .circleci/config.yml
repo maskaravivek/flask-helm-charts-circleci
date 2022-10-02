@@ -18,7 +18,7 @@ workflows:
           tag: 'latest'
   build_and_push_helm_chart:
     jobs:
-      - aws-ecr-helm/login-and-push-helm-chart:
+      - aws-ecr-helm/push-helm-chart:
           account-url: AWS_ECR_ACCOUNT_URL
           aws-access-key-id: AWS_ACCESS_KEY
           aws-secret-access-key: AWS_ACCESS_SECRET
