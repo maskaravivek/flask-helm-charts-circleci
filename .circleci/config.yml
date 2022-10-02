@@ -24,6 +24,6 @@ workflows:
           aws-secret-access-key: AWS_ACCESS_SECRET
           create-repo: false
           path: ./charts
-          region: '${AWS_REGION_NAME}'
+          region: AWS_REGION_NAME
           repo: '${AWS_ECR_HELM_REPO_NAME}'
           tag: 1.0.0
