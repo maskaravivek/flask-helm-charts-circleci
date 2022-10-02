@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: 927728891088.dkr.ecr.us-west-2.amazonaws.com/flask-hello-world:latest
+  repository: 927728891088.dkr.ecr.us-west-2.amazonaws.com/flask-hello-world
   pullPolicy: IfNotPresent
   tag: "latest"
 
@@ -18,3 +18,14 @@ service:
   port: 80
   targetPort: 5000
   type: LoadBalancer
+
+replicaCount: 1
+
+autoscaling:
+  enabled: false
+
+ingress:
+  enabled: false
+
+imagePullSecrets:
+  - name: regcred
