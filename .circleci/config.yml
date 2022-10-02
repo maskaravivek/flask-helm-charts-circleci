@@ -19,7 +19,7 @@ workflows:
   build_and_push_helm_chart:
     jobs:
       - aws-ecr-helm/build-and-push-image:
-          account-url: AWS_ECR_REGISTRY_ID
+          account-url: AWS_ECR_ACCOUNT_URL
           aws-access-key-id: AWS_ACCESS_KEY
           aws-secret-access-key: AWS_ACCESS_SECRET
           create-repo: false
