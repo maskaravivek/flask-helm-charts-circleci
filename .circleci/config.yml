@@ -28,12 +28,12 @@ workflows:
           region: AWS_REGION_NAME
           repo: '${AWS_ECR_HELM_REPO_NAME}'
           tag: 1.0.0
-  install_helm_on_eks_cluster:
+  install_helm_chart_on_eks_cluster:
     jobs:
       - aws-eks/install-helm-on-cluster:
           cluster-name: '${AWS_EKS_CLUSTER_NAME}'
-  install_helm_chart:
-    jobs:
+          region: '${AWS_REGION_NAME}'
       - aws-eks/install-helm-chart:
           chart: '${AWS_ECR_HELM_REPO_URL}'
           cluster-name: '${AWS_EKS_CLUSTER_NAME}'
+          region: '${AWS_REGION_NAME}'
