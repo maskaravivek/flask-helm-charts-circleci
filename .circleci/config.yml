@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   aws-ecr: orbies/aws-ecr@1.2.1
+  aws-eks: openbean/aws-eks@2.0.0
 
 jobs:
   deploy_to_eks:
@@ -31,7 +32,7 @@ jobs:
           command: export KUBECONFIG=$HOME/.kube/kubeconfig && /home/circleci/bin/aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $AWS_EKS_CLUSTER_NAME
       - run:
           name: Install and configuire helm
-          command: sudo curl -L https://get.helm.sh/helm-v3.10.1-linux-amd64.tar.gz | tar xz && sudo mv linux-amd64/helm /bin/helm && sudo rm -rf linux-amd64
+          command: sudo curl -L https://storage.googleapis.com/kubernetes-helm/helm-v2.11.0-linux-amd64.tar.gz | tar xz && sudo mv linux-amd64/helm /bin/helm && sudo rm -rf linux-amd64
       - run:
           name: Initialize helm
           command:  helm init --client-only --kubeconfig=$HOME/.kube/kubeconfig
@@ -64,6 +65,14 @@ workflows:
           tag: 1.0.0
           requires:
             - aws-ecr/build-and-push-image
-      - deploy_to_eks:
+      - aws-eks/install-helm-on-cluster:
+          cluster-name: '${AWS_EKS_CLUSTER_NAME}'
+          enable-cluster-wide-admin-access: true
           requires:
             - aws-ecr/push-helm-chart
+      - aws-eks/install-helm-chart:
+          chart: ./charts
+          cluster-name: '${AWS_EKS_CLUSTER_NAME}'
+          release-name: flask-helm
+          requires:
+            - aws-eks/install-helm-on-cluster
