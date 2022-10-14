@@ -25,7 +25,7 @@ jobs:
       - run:
           name: 'create cluster'
           command: |
-            eksctl create cluster --name my-test-cluster --region us-west-2 --fargate
+            eksctl create cluster --name my-test-cluster-2 --region us-west-2 --fargate
       - run:
           name: 'docker login'
           command: |
