@@ -10,8 +10,8 @@ jobs:
         - image: cimg/python:3.10.7
     steps:
       - run:
-          name: Install AWS cli
-          command: curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && sudo ./aws/install
+          name: Install awscli
+          command: curl --silent "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && sudo ./aws/install
       - run:
           name: Install eksctl
           command: curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp && sudo mv /tmp/eksctl /usr/local/bin
@@ -24,11 +24,6 @@ jobs:
       - run:
           name: Install and configuire helm
           command: sudo curl -L https://get.helm.sh/helm-v3.10.1-linux-amd64.tar.gz | tar xz && sudo mv linux-amd64/helm /bin/helm && sudo rm -rf linux-amd64
-
-      - run:
-          name: 'create cluster'
-          command: |
-            eksctl create cluster --name my-test-cluster-2 --region us-west-2 --fargate
       - run:
           name: 'docker login'
           command: |
@@ -37,10 +32,14 @@ jobs:
           name: 'helm login'
           command: |
             aws ecr get-login-password --region us-west-2 | helm registry login --username AWS --password-stdin 927728891088.dkr.ecr.us-west-2.amazonaws.com
-      - run:
-          name: 'helm install'
-          command: |
-            helm install flask-helm oci://927728891088.dkr.ecr.us-west-2.amazonaws.com/flask-helm-chart --version 1.0.0
+      # - run:
+      #     name: 'create cluster'
+      #     command: |
+      #       eksctl create cluster --name my-test-cluster-2 --region us-west-2 --fargate
+      # - run:
+      #     name: 'helm install'
+      #     command: |
+      #       helm install flask-helm oci://927728891088.dkr.ecr.us-west-2.amazonaws.com/flask-helm-chart --version 1.0.0
 
 workflows:
   build_and_push_image:
