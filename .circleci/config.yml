@@ -4,9 +4,10 @@ orbs:
   aws-ecr: circleci/aws-ecr@8.1.2
   aws-ecr-helm: orbies/aws-ecr@1.2.1
   aws-eks: openbean/aws-eks@2.0.0
+  aws-cli: circleci/aws-cli@2.0.6
 
 workflows:
-  build_and_push_docker_image:
+  deploy_to_eks:
     jobs:
       - aws-ecr/build-and-push-image:
           aws-access-key-id: AWS_ACCESS_KEY
@@ -17,8 +18,6 @@ workflows:
           registry-id: AWS_ECR_REGISTRY_ID
           region: '${AWS_REGION_NAME}'
           tag: 'latest'
-  build_and_push_helm_chart:
-    jobs:
       - aws-ecr-helm/push-helm-chart:
           account-url: AWS_ECR_ACCOUNT_URL
           aws-access-key-id: AWS_ACCESS_KEY
@@ -28,12 +27,14 @@ workflows:
           region: AWS_REGION_NAME
           repo: '${AWS_ECR_HELM_REPO_NAME}'
           tag: 1.0.0
-  install_helm_chart_on_eks_cluster:
-    jobs:
+      - aws-cli/setup:
+          aws-access-key-id: AWS_ACCESS_KEY
+          aws-secret-access-key: AWS_ACCESS_SECRET
+          aws-region: AWS_REGION_NAME
       - aws-eks/install-helm-on-cluster:
           cluster-name: '${AWS_EKS_CLUSTER_NAME}'
           aws-region: '${AWS_REGION_NAME}'
       - aws-eks/install-helm-chart:
           chart: '${AWS_ECR_HELM_REPO_URL}'
           cluster-name: '${AWS_EKS_CLUSTER_NAME}'
-          aws-region: '${AWS_REGION_NAME}'
+          aws-region: '${AWS_REGION_NAME}'  
