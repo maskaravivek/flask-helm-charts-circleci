@@ -32,14 +32,14 @@ jobs:
           name: 'helm login'
           command: |
             aws ecr get-login-password --region us-west-2 | helm registry login --username AWS --password-stdin 927728891088.dkr.ecr.us-west-2.amazonaws.com
-      # - run:
-      #     name: 'create cluster'
-      #     command: |
-      #       eksctl create cluster --name my-test-cluster-2 --region us-west-2 --fargate
-      # - run:
-      #     name: 'helm install'
-      #     command: |
-      #       helm install flask-helm oci://927728891088.dkr.ecr.us-west-2.amazonaws.com/flask-helm-chart --version 1.0.0
+      - run:
+          name: 'create cluster'
+          command: |
+            eksctl create cluster --name my-test-cluster --region us-west-2 --fargate
+      - run:
+          name: 'helm install'
+          command: |
+            helm install flask-helm oci://927728891088.dkr.ecr.us-west-2.amazonaws.com/flask-helm-chart --version 1.0.0
 
 workflows:
   build_and_push_image:
