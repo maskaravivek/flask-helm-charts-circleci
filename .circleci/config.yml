@@ -31,7 +31,7 @@ jobs:
           command: export KUBECONFIG=$HOME/.kube/kubeconfig && /home/circleci/bin/aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $AWS_EKS_CLUSTER_NAME
       - run:
           name: Install and configuire helm
-          command: sudo curl -L https://storage.googleapis.com/kubernetes-helm/helm-v2.11.0-linux-amd64.tar.gz | tar xz && sudo mv linux-amd64/helm /bin/helm && sudo rm -rf linux-amd64
+          command: sudo curl -L https://get.helm.sh/helm-v3.10.1-linux-arm64.tar.gz | tar xz && sudo mv linux-amd64/helm /bin/helm && sudo rm -rf linux-amd64
       - run:
           name: Initialize helm
           command:  helm init --client-only --kubeconfig=$HOME/.kube/kubeconfig
