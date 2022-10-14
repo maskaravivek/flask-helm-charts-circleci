@@ -20,7 +20,7 @@ jobs:
           command: sudo curl -L https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl && sudo chmod +x /usr/local/bin/kubectl  
       - run:
           name: Install and confgure kubectl aws-iam-authenticator
-          command: curl -o aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator && sudo chmod +x ./aws-iam-authenticator && sudo cp ./aws-iam-authenticator /bin/aws-iam-authenticator
+          command: curl -Lo aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.5.9/aws-iam-authenticator_0.5.9_linux_amd64 && chmod +x ./aws-iam-authenticator && mkdir -p $HOME/bin && cp ./aws-iam-authenticator $HOME/bin/aws-iam-authenticator && export PATH=$PATH:$HOME/bin
       - run:
           name: Install and configuire helm
           command: sudo curl -L https://get.helm.sh/helm-v3.10.1-linux-amd64.tar.gz | tar xz && sudo mv linux-amd64/helm /bin/helm && sudo rm -rf linux-amd64
@@ -32,14 +32,14 @@ jobs:
           name: 'helm login'
           command: |
             aws ecr get-login-password --region us-west-2 | helm registry login --username AWS --password-stdin 927728891088.dkr.ecr.us-west-2.amazonaws.com
-      - run:
-          name: 'create cluster'
-          command: |
-            eksctl create cluster --name my-test-cluster --region us-west-2 --fargate
-      - run:
-          name: 'helm install'
-          command: |
-            helm install flask-helm oci://927728891088.dkr.ecr.us-west-2.amazonaws.com/flask-helm-chart --version 1.0.0
+      # - run:
+      #     name: 'create cluster'
+      #     command: |
+      #       eksctl create cluster --name my-test-cluster --region us-west-2 --fargate
+      # - run:
+      #     name: 'helm install'
+      #     command: |
+      #       helm install flask-helm oci://927728891088.dkr.ecr.us-west-2.amazonaws.com/flask-helm-chart --version 1.0.0
 
 workflows:
   build_and_push_image:
