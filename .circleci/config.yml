@@ -1,70 +1,9 @@
-version: 2.1
-
 orbs:
-  aws-ecr: orbies/aws-ecr@1.2.1
-  aws-eks: openbean/aws-eks@2.0.0
-
-jobs:
-  deploy_to_eks:
-    docker:
-        - image: cimg/python:3.10.7
-    steps:
-      - attach_workspace:
-          at: /tmp/workspace
-      - checkout
-      - run:
-          name: Install AWS cli
-          command: export TZ=Europe/Minsk && sudo ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > sudo  /etc/timezone && sudo apt-get update && sudo apt-get install -y awscli
-      - run:
-          name: Set the tag for the image, we will concatenate the app verson and circle build number with a `-` char in between
-          command:  echo 'export TAG=$(cat VERSION)-$CIRCLE_PREVIOUS_BUILD_NUM' >> $BASH_ENV
-      - run:
-          name: Install and confgure kubectl
-          command: sudo curl -L https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl && sudo chmod +x /usr/local/bin/kubectl  
-      - run:
-          name: Install and confgure kubectl aws-iam-authenticator
-          command: curl -o aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator && sudo chmod +x ./aws-iam-authenticator && sudo cp ./aws-iam-authenticator /bin/aws-iam-authenticator
-      - run:
-          name: Install latest awscli version
-          command: sudo apt install unzip && curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip" && unzip awscli-bundle.zip &&./awscli-bundle/install -b ~/bin/aws
-      - run:
-          name: Get the kubeconfig file 
-          command: export KUBECONFIG=$HOME/.kube/kubeconfig && /home/circleci/bin/aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $AWS_EKS_CLUSTER_NAME
-      - run:
-          name: Install and configuire helm
-          command: sudo curl -L https://storage.googleapis.com/kubernetes-helm/helm-v2.11.0-linux-amd64.tar.gz | tar xz && sudo mv linux-amd64/helm /bin/helm && sudo rm -rf linux-amd64
-      - run:
-          name: Initialize helm
-          command:  helm init --client-only --kubeconfig=$HOME/.kube/kubeconfig
-      - run:
-          name: Install tiller plugin
-          command: helm plugin install https://github.com/rimusz/helm-tiller --kubeconfig=$HOME/.kube/kubeconfig        
-      - run:
-          name: Release flask-helm-chart using helm chart 
-          command: bash scripts/deploy-flask.sh 1.0.0
-
+  aws-eks: openbean/aws-eks@1.0.0
+version: 2.1
 workflows:
-  build_and_push_image:
+  deployment:
     jobs:
-      - aws-ecr/build-and-push-image:
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-          repo: '${AWS_ECR_REPO_NAME}'
-          docker-login: false
-          account-url: AWS_ECR_ACCOUNT_URL
-          region: AWS_DEFAULT_REGION
-          tag: 'latest'
-      - aws-ecr/push-helm-chart:
-          account-url: AWS_ECR_ACCOUNT_URL
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-          create-repo: false
-          path: ./charts
-          region: AWS_DEFAULT_REGION
-          repo: '${AWS_ECR_HELM_REPO_NAME}'
-          tag: 1.0.0
-          requires:
-            - aws-ecr/build-and-push-image
       - aws-eks/create-cluster:
           cluster-name: my-eks-helm-demo
       - aws-eks/install-helm-on-cluster:
@@ -72,10 +11,18 @@ workflows:
           enable-cluster-wide-admin-access: true
           requires:
             - aws-eks/create-cluster
-            - aws-ecr/push-helm-chart
       - aws-eks/install-helm-chart:
-          chart: ./charts
+          chart: stable/grafana
           cluster-name: my-eks-helm-demo
-          release-name: flask-helm
+          release-name: grafana-release
           requires:
             - aws-eks/install-helm-on-cluster
+      - aws-eks/delete-helm-release:
+          cluster-name: my-eks-helm-demo
+          release-name: grafana-release
+          requires:
+            - aws-eks/install-helm-chart
+      - aws-eks/delete-cluster:
+          cluster-name: my-eks-helm-demo
+          requires:
+            - aws-eks/delete-helm-release
