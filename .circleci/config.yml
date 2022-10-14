@@ -65,14 +65,17 @@ workflows:
           tag: 1.0.0
           requires:
             - aws-ecr/build-and-push-image
+      - aws-eks/create-cluster:
+          cluster-name: my-eks-helm-demo
       - aws-eks/install-helm-on-cluster:
-          cluster-name: '${AWS_EKS_CLUSTER_NAME}'
+          cluster-name: my-eks-helm-demo
           enable-cluster-wide-admin-access: true
           requires:
+            - aws-eks/create-cluster
             - aws-ecr/push-helm-chart
       - aws-eks/install-helm-chart:
           chart: ./charts
-          cluster-name: '${AWS_EKS_CLUSTER_NAME}'
+          cluster-name: my-eks-helm-demo
           release-name: flask-helm
           requires:
             - aws-eks/install-helm-on-cluster
