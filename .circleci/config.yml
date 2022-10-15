@@ -37,9 +37,9 @@ jobs:
           command: |
             eksctl utils write-kubeconfig --cluster=my-test-cluster
       - run:
-          name: 'kubectl get pods'
+          name: 'helm install'
           command: |
-            kubectl get pods
+            helm install flask-helm oci://927728891088.dkr.ecr.us-west-2.amazonaws.com/flask-helm-chart --version 1.0.0
 
 workflows:
   build_and_push_image:
