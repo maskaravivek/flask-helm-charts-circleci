@@ -2,45 +2,44 @@ version: 2.1
 
 orbs:
   aws-ecr: orbies/aws-ecr@1.2.1
+  aws-eks: openbean/aws-eks@2.0.0
 
 jobs:
-  deploy_to_eks:
+  install_helm_chart:
     docker:
         - image: cimg/python:3.10.7
     steps:
-      - attach_workspace:
-          at: /tmp/workspace
-      - checkout
       - run:
-          name: Install AWS cli
-          command: export TZ=Europe/Minsk && sudo ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > sudo  /etc/timezone && sudo apt-get update && sudo apt-get install -y awscli
+          name: Install awscli
+          command: curl --silent "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && sudo ./aws/install
       - run:
-          name: Set the tag for the image, we will concatenate the app verson and circle build number with a `-` char in between
-          command:  echo 'export TAG=$(cat VERSION)-$CIRCLE_PREVIOUS_BUILD_NUM' >> $BASH_ENV
+          name: Install eksctl
+          command: curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp && sudo mv /tmp/eksctl /usr/local/bin
       - run:
           name: Install and confgure kubectl
-          command: sudo curl -L https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl && sudo chmod +x /usr/local/bin/kubectl  
+          command: curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && kubectl version --client
       - run:
           name: Install and confgure kubectl aws-iam-authenticator
-          command: curl -o aws-iam-authenticator https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator && sudo chmod +x ./aws-iam-authenticator && sudo cp ./aws-iam-authenticator /bin/aws-iam-authenticator
-      - run:
-          name: Install latest awscli version
-          command: sudo apt install unzip && curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip" && unzip awscli-bundle.zip &&./awscli-bundle/install -b ~/bin/aws
-      - run:
-          name: Get the kubeconfig file 
-          command: export KUBECONFIG=$HOME/.kube/kubeconfig && /home/circleci/bin/aws eks --region $AWS_DEFAULT_REGION update-kubeconfig --name $AWS_EKS_CLUSTER_NAME
+          command: curl -Lo aws-iam-authenticator https://github.com/kubernetes-sigs/aws-iam-authenticator/releases/download/v0.5.9/aws-iam-authenticator_0.5.9_linux_amd64 && chmod +x ./aws-iam-authenticator && mkdir -p $HOME/bin && cp ./aws-iam-authenticator $HOME/bin/aws-iam-authenticator && export PATH=$PATH:$HOME/bin
       - run:
           name: Install and configuire helm
-          command: sudo curl -L https://storage.googleapis.com/kubernetes-helm/helm-v2.11.0-linux-amd64.tar.gz | tar xz && sudo mv linux-amd64/helm /bin/helm && sudo rm -rf linux-amd64
+          command: sudo curl -L https://get.helm.sh/helm-v3.10.1-linux-amd64.tar.gz | tar xz && sudo mv linux-amd64/helm /bin/helm && sudo rm -rf linux-amd64
       - run:
-          name: Initialize helm
-          command:  helm init --client-only --kubeconfig=$HOME/.kube/kubeconfig
+          name: 'docker login'
+          command: |
+            aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 927728891088.dkr.ecr.us-west-2.amazonaws.com
       - run:
-          name: Install tiller plugin
-          command: helm plugin install https://github.com/rimusz/helm-tiller --kubeconfig=$HOME/.kube/kubeconfig        
+          name: 'helm login'
+          command: |
+            aws ecr get-login-password --region us-west-2 | helm registry login --username AWS --password-stdin 927728891088.dkr.ecr.us-west-2.amazonaws.com
       - run:
-          name: Release flask-helm-chart using helm chart 
-          command: bash scripts/deploy-flask.sh 1.0.0
+          name: 'cluster configs'
+          command: |
+            eksctl utils write-kubeconfig --cluster=my-test-cluster
+      - run:
+          name: 'helm install'
+          command: |
+            helm install flask-helm oci://927728891088.dkr.ecr.us-west-2.amazonaws.com/flask-helm-chart --version 1.0.0
 
 workflows:
   build_and_push_image:
@@ -64,6 +63,6 @@ workflows:
           tag: 1.0.0
           requires:
             - aws-ecr/build-and-push-image
-      - deploy_to_eks:
+      - install_helm_chart:
           requires:
             - aws-ecr/push-helm-chart
