@@ -1,14 +1,12 @@
 #!/bin/bash
 TAG=$1
+AWS_ECR_ACCOUNT_URL=$2
+AWS_ECR_HELM_REPO_NAME=$3
 echo "start tiller"
-export KUBECONFIG=$HOME/.kube/kubeconfig
-helm tiller start-ci
-export HELM_HOST=127.0.0.1:44134
-result=$(eval helm ls | grep flask-helm-chart) 
+export KUBECONFIG=$HOME/.kube/config
+result=$(eval helm ls | grep flask-helm) 
 if [ $? -ne "0" ]; then 
-   helm install --timeout 180 --name flask-helm-chart --set image.tag=$TAG charts/flask-helm-chart
+   helm install flask-helm oci://$AWS_ECR_ACCOUNT_URL/$AWS_ECR_HELM_REPO_NAME --version $TAG
 else 
-   helm upgrade --timeout 180 flask-helm-chart --set image.tag=$TAG charts/flask-helm-chart
+   helm upgrade flask-helm oci://$AWS_ECR_ACCOUNT_URL/$AWS_ECR_HELM_REPO_NAME --version $TAG
 fi
-echo "stop tiller"
-helm tiller stop 

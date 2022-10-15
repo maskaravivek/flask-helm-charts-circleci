@@ -38,8 +38,7 @@ jobs:
             eksctl utils write-kubeconfig --cluster=$AWS_EKS_CLUSTER_NAME
       - run:
           name: 'helm install'
-          command: |
-            helm install flask-helm oci://$AWS_ECR_ACCOUNT_URL/$AWS_ECR_HELM_REPO_NAME --version 1.0.0
+          command: bash scripts/deploy-flask.sh $TAG $AWS_ECR_ACCOUNT_URL $AWS_ECR_HELM_REPO_NAME
 
 workflows:
   build_and_push_image:
