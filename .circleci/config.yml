@@ -32,10 +32,10 @@ jobs:
           name: 'helm login'
           command: |
             aws ecr get-login-password --region us-west-2 | helm registry login --username AWS --password-stdin 927728891088.dkr.ecr.us-west-2.amazonaws.com
-      # - run:
-      #     name: 'create cluster'
-      #     command: |
-      #       eksctl create cluster --name my-test-cluster --region us-west-2 --fargate
+      - run:
+          name: 'create cluster'
+          command: |
+            eksctl utils write-kubeconfig --cluster=my-test-cluster
       # - run:
       #     name: 'helm install'
       #     command: |
@@ -44,25 +44,25 @@ jobs:
 workflows:
   build_and_push_image:
     jobs:
-      - aws-ecr/build-and-push-image:
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-          repo: '${AWS_ECR_REPO_NAME}'
-          docker-login: false
-          account-url: AWS_ECR_ACCOUNT_URL
-          region: AWS_DEFAULT_REGION
-          tag: 'latest'
-      - aws-ecr/push-helm-chart:
-          account-url: AWS_ECR_ACCOUNT_URL
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-          create-repo: false
-          path: ./charts
-          region: AWS_DEFAULT_REGION
-          repo: '${AWS_ECR_HELM_REPO_NAME}'
-          tag: 1.0.0
-          requires:
-            - aws-ecr/build-and-push-image
-      - install_helm_chart:
-          requires:
-            - aws-ecr/push-helm-chart
+      # - aws-ecr/build-and-push-image:
+      #     aws-access-key-id: AWS_ACCESS_KEY_ID
+      #     aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+      #     repo: '${AWS_ECR_REPO_NAME}'
+      #     docker-login: false
+      #     account-url: AWS_ECR_ACCOUNT_URL
+      #     region: AWS_DEFAULT_REGION
+      #     tag: 'latest'
+      # - aws-ecr/push-helm-chart:
+      #     account-url: AWS_ECR_ACCOUNT_URL
+      #     aws-access-key-id: AWS_ACCESS_KEY_ID
+      #     aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+      #     create-repo: false
+      #     path: ./charts
+      #     region: AWS_DEFAULT_REGION
+      #     repo: '${AWS_ECR_HELM_REPO_NAME}'
+      #     tag: 1.0.0
+      #     requires:
+      #       - aws-ecr/build-and-push-image
+      - install_helm_chart
+          # requires:
+          #   - aws-ecr/push-helm-chart
