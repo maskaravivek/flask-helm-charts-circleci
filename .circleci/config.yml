@@ -39,7 +39,7 @@ jobs:
       - run:
           name: 'helm install'
           command: |
-            helm install 'flask-helm oci://${AWS_ECR_ACCOUNT_URL}/${AWS_ECR_HELM_REPO_NAME}' --version '${CIRCLE_SHA1}'
+            helm install flask-helm 'oci://${AWS_ECR_ACCOUNT_URL}/${AWS_ECR_HELM_REPO_NAME}' --version $CIRCLE_SHA1
 
 workflows:
   build_and_push_image:
