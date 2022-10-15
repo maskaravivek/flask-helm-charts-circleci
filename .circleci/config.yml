@@ -9,6 +9,7 @@ jobs:
     docker:
         - image: cimg/python:3.10.7
     steps:
+      - checkout
       - run:
           name: Install awscli
           command: curl --silent "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && unzip awscliv2.zip && sudo ./aws/install
