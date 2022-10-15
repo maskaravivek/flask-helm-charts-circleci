@@ -39,7 +39,7 @@ jobs:
       - run:
           name: 'helm install'
           command: |
-            helm install flask-helm oci://$AWS_ECR_ACCOUNT_URL/$AWS_ECR_HELM_REPO_NAME --version $CIRCLE_SHA1
+            helm install flask-helm oci://$AWS_ECR_ACCOUNT_URL/$AWS_ECR_HELM_REPO_NAME --version 1.0.0
 
 workflows:
   build_and_push_image:
@@ -51,7 +51,7 @@ workflows:
           docker-login: false
           account-url: AWS_ECR_ACCOUNT_URL
           region: AWS_DEFAULT_REGION
-          tag: '${CIRCLE_SHA1}'
+          tag: "latest"
       - aws-ecr/push-helm-chart:
           account-url: AWS_ECR_ACCOUNT_URL
           aws-access-key-id: AWS_ACCESS_KEY_ID
@@ -60,7 +60,7 @@ workflows:
           path: ./charts
           region: AWS_DEFAULT_REGION
           repo: '${AWS_ECR_HELM_REPO_NAME}'
-          tag: '${CIRCLE_SHA1}'
+          tag: 1.0.0
           requires:
             - aws-ecr/build-and-push-image
       - install_helm_chart:
