@@ -6,7 +6,7 @@ echo "start tiller"
 export KUBECONFIG=$HOME/.kube/config
 result=$(eval helm ls | grep flask-helm) 
 if [ $? -ne "0" ]; then 
-   helm install flask-helm oci://$AWS_ECR_ACCOUNT_URL/$AWS_ECR_HELM_REPO_NAME --version $TAG
+   helm install flask-helm "oci://$AWS_ECR_ACCOUNT_URL/$AWS_ECR_HELM_REPO_NAME" --version $TAG
 else 
-   helm upgrade flask-helm oci://$AWS_ECR_ACCOUNT_URL/$AWS_ECR_HELM_REPO_NAME --version $TAG
+   helm upgrade flask-helm "oci://$AWS_ECR_ACCOUNT_URL/$AWS_ECR_HELM_REPO_NAME" --version $TAG
 fi
